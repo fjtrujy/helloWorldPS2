@@ -9,12 +9,12 @@
 EE_BIN = hello.elf
 
 EE_OBJS = main.o
-EE_LIBS = -lpatches
 
-#Include preferences
-# include $(PS2SDK)/samples/Makefile.pref
-# include $(PS2SDK)/samples/Makefile.eeglobal
+all: $(EE_BIN)
 
-#Include UJ preferences
-include $(PS2SDKUJ)/samples/Makefile.pref
-include $(PS2SDKUJ)/samples/Makefile.eeglobal
+clean:
+	rm -rf $(EE_OBJS) $(EE_BIN)
+
+# Include makefiles
+include $(PS2SDK)/samples/Makefile.pref
+include $(PS2SDK)/samples/Makefile.eeglobal
