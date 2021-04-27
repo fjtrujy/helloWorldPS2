@@ -13,10 +13,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ps2dev/ps2dev:latest
+    strategy:
+      matrix:
+        docker_tag: [v1.0, v1.1, v1.2.0, latest]
+
+    container: ps2dev/ps2dev:${{ matrix.docker_tag }}
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Install dependencies
       run: |
         apk add build-base git bash
@@ -34,5 +38,5 @@ jobs:
       if: ${{ success() }}
       uses: actions/upload-artifact@v2
       with:
-        name: hello-${{ steps.slug.outputs.sha8 }}
+        name: hello-${{ steps.slug.outputs.sha8 }}-${{matrix.docker_tag}}
         path: hello.elf
