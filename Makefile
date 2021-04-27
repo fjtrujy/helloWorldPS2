@@ -9,6 +9,8 @@
 EE_BIN = hello.elf
 
 EE_OBJS = main.o
+EE_CFLAGS = -Os
+EE_LDFLAGS = -s
 
 all: $(EE_BIN)
 
