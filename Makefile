@@ -10,7 +10,9 @@ EE_BIN = hello.elf
 
 EE_OBJS = main.o
 EE_CFLAGS = -Os
-EE_LDFLAGS = -s
+EE_CFLAGS += -fdata-sections -ffunction-sections
+EE_LDFLAGS += -s
+EE_LDFLAGS += -Wl,--gc-sections
 
 ifeq ($(DUMMY_TIMEZONE), 1)
    EE_CFLAGS += -DDUMMY_TIMEZONE
