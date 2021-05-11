@@ -18,4 +18,5 @@ int main()
 #if defined(DUMMY_LIBC_INIT)
    void _ps2sdk_libc_init() {}
    void _ps2sdk_libc_deinit() {}
+   void _ps2sdk_args_parse(int argc, char ** argv) {}
 #endif
