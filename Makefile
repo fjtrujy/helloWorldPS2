@@ -8,9 +8,13 @@
 
 EE_BIN = hello.elf
 
+# KERNEL_NOPATCH = 1
+# NEWLIB_NANO = 1
+
 EE_OBJS = main.o
 EE_CFLAGS = -Os
 EE_CFLAGS += -fdata-sections -ffunction-sections
+# EE_LDFLAGS += -nodefaultlibs -Wl,--start-group -lc_nano -lps2sdkc -lkernel-nopatch -Wl,--end-group
 EE_LDFLAGS += -s
 EE_LDFLAGS += -Wl,--gc-sections
 
