@@ -16,6 +16,7 @@ jobs:
     strategy:
       matrix:
         docker_tag: [v1.0, v1.1, v1.2.0, latest]
+        flags: [DUMMY_LIBC_INIT=1, DUMMY_TIMEZONE=1, DEFAULT=1]
 
     container: ps2dev/ps2dev:${{ matrix.docker_tag }}
     steps:
@@ -28,7 +29,7 @@ jobs:
 
     - name: Compile project
       run: |
-        make clean all
+        make clean all ${{ matrix.flags }}
 
     - name: Get short SHA
       id: slug
@@ -38,5 +39,5 @@ jobs:
       if: ${{ success() }}
       uses: actions/upload-artifact@v2
       with:
-        name: hello-${{ steps.slug.outputs.sha8 }}-${{matrix.docker_tag}}
+        name: hello-${{ steps.slug.outputs.sha8 }}-${{matrix.docker_tag}}-${{ matrix.flags }}
         path: hello.elf

@@ -12,6 +12,14 @@ EE_OBJS = main.o
 EE_CFLAGS = -Os
 EE_LDFLAGS = -s
 
+ifeq ($(DUMMY_TIMEZONE), 1)
+   EE_CFLAGS += -DDUMMY_TIMEZONE
+endif
+
+ifeq ($(DUMMY_LIBC_INIT), 1)
+   EE_CFLAGS += -DDUMMY_LIBC_INIT
+endif
+
 all: $(EE_BIN)
 
 clean:
