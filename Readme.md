@@ -31,7 +31,7 @@ So, in theory the program should just contains required things to do a single `p
 - ps2 kernel -> libkernel.a
 ```
 
-Are those 3 libraries, the "guilties" of the exceed of the binary size.
+These 3 libraries, are the "guilties" of the exceed of the binary size.
 
 ## Why?
 These libraries contains the basic functionality to make to work every single PS2 app, and by default there are some functions that are called during initializacion of the program, in order to prepare the environment and basic functionality.
