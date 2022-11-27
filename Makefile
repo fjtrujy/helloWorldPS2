@@ -12,10 +12,7 @@ EE_BIN = hello.elf
 # NEWLIB_NANO = 1
 
 EE_OBJS = main.o
-EE_CFLAGS = -Os
 EE_CFLAGS += -fdata-sections -ffunction-sections
-# EE_LDFLAGS += -nodefaultlibs -Wl,--start-group -lc_nano -lps2sdkc -lkernel-nopatch -Wl,--end-group
-EE_LDFLAGS += -s
 EE_LDFLAGS += -Wl,--gc-sections
 
 ifeq ($(DUMMY_TIMEZONE), 1)
@@ -24,6 +21,17 @@ endif
 
 ifeq ($(DUMMY_LIBC_INIT), 1)
    EE_CFLAGS += -DDUMMY_LIBC_INIT
+endif
+
+ifeq ($(KERNEL_NOPATCH), 1)
+   EE_CFLAGS += -DKERNEL_NOPATCH
+endif
+
+ifeq ($(DEBUG), 1)
+  EE_CFLAGS += -DDEBUG -O0 -g
+else 
+  EE_CFLAGS += -Os
+  EE_LDFLAGS += -s
 endif
 
 all: $(EE_BIN)

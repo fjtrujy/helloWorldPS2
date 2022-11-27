@@ -48,11 +48,11 @@ First of all is try to reduce the size of the libraries it self. The most critic
 Secondly during the initalization of the `ps2sdkc` there are some `weaks` methods required by `newlib` they are:
 
 ```c
-void _ps2sdk_libc_init();
-void _ps2sdk_libc_deinit();
+void _libcglue_init();
+void _libcglue_deinit();
 
 ....
-void _ps2sdk_timezone_update(); // Called by _ps2sdk_libc_init in the weak implementation
+void _libcglue_timezone_update(); // Called by _libcglue_init in the weak implementation
 ```
 
 These functions prepare the app to use properly all the timing functionality (sleep, nanosleep, cpu_ticks, getlocaltimezone).
@@ -61,13 +61,13 @@ If your app, is not going to use any functionality realted to this, you can "sto
 
 If your app uses time function but is ignoring `timezones`:
 ```c
-void _ps2sdk_timezone_update() {}
+void _libcglue_timezone_update() {}
 ```
 
 If your app is not using time functions at all (this one also ignore `timezones`)):
 ```c
-void _ps2sdk_libc_init() {}
-void _ps2sdk_libc_deinit() {}
+void _libcglue_init() {}
+void _libcglue_deinit() {}
 ```
 
 Adding these piece of code to your main app, will avoid to include unncesary initialization to your project.
