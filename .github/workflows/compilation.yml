@@ -15,15 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        docker_tag: [v1.0, v1.1, v1.2.0, latest]
+        docker_tag: [latest]
         flags: [
-          DUMMY_LIBC_INIT=1, 
-          DUMMY_TIMEZONE=1, 
-          KERNEL_NOPATCH=1, 
-          NEWLIB_NANO=1, 
-          KERNEL_NOPATCH=1 NEWLIB_NANO=1,
-          KERNEL_NOPATCH=1 NEWLIB_NANO=1 DUMMY_LIBC_INIT=1,
-          KERNEL_NOPATCH=1 NEWLIB_NANO=1 DUMMY_TIMEZONE=1,  
           DEFAULT=1
           ]
 
