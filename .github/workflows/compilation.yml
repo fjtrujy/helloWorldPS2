@@ -32,7 +32,7 @@ jobs:
       run: |
         git clone https://github.com/ps2dev/ps2sdk.git
         cd ps2sdk
-        git checkout 08181ea0b2054605626f78e29e1efc24973a54fd
+        git checkout 7b2052735fccad687492cd7311bd9daeb8d329f0
         make -j $(getconf _NPROCESSORS_ONLN) clean
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
