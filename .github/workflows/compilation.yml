@@ -30,9 +30,9 @@ jobs:
     
     - name: Recompile ps2sdk
       run: |
-        git clone https://github.com/fjtrujy/ps2sdk.git
+        git clone https://github.com/Ziemas/ps2sdk.git
         cd ps2sdk
-        git checkout 8ee69022ba81c977fe005f574d1fcfececbcb357
+        git checkout crt0
         make -j $(getconf _NPROCESSORS_ONLN) clean
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
