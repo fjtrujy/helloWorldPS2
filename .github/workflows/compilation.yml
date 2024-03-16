@@ -13,26 +13,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        docker_tag: [latest]
-        flags: [
-          DEBUG=1
-          ]
-
-    container: ps2dev/ps2dev:${{ matrix.docker_tag }}
+    container: ps2dev/ps2dev:latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install dependencies
       run: |
         apk add build-base git bash
     
-    - name: Recompile ps2sdk
+    - name: Recompile ps2_drivers
       run: |
-        git clone https://github.com/Ziemas/ps2sdk.git
-        cd ps2sdk
-        git checkout crt0
+        git clone https://github.com/fjtrujy/ps2_drivers.git
+        cd ps2_drivers
+        git checkout fix_network
         make -j $(getconf _NPROCESSORS_ONLN) clean
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
@@ -40,7 +33,7 @@ jobs:
     - name: Compile project
       run: |
         make -j $(getconf _NPROCESSORS_ONLN) clean
-        make -j $(getconf _NPROCESSORS_ONLN) all ${{ matrix.flags }}
+        make -j $(getconf _NPROCESSORS_ONLN) all
 
     - name: Get short SHA
       id: slug
@@ -48,7 +41,7 @@ jobs:
 
     - name: Upload artifacts
       if: ${{ success() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: hello-${{ steps.slug.outputs.sha8 }}-${{matrix.docker_tag}}-${{ matrix.flags }}
-        path: hello.elf
+        name: curl-${{ steps.slug.outputs.sha8 }}
+        path: curl.elf
