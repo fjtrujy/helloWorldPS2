@@ -249,34 +249,34 @@ static void deinit_drivers() {
 int bar_state = 0;
 int latest_round = -1;
 int progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
-    int round = bar_state / 10;
-#if !defined(_EE)
-    switch (round)
-    {
-    case 0:
-        dprintf("|");
-        break;
-    case 1:
-        dprintf("/");
-        break;
-    case 2:
-        dprintf("-");
-        break;
-    case 3:
-        dprintf("\\");
-        break;
-    default:
-        break;
-    }
-    dprintf("\r");
-#endif
-    if (round != latest_round) {
-#if defined(_EE)
-        dprintf(".");
-#endif
-        latest_round = round;
-    }
-    bar_state = (bar_state + 1) % 40;
+//     int round = bar_state / 10;
+// #if !defined(_EE)
+//     switch (round)
+//     {
+//     case 0:
+//         dprintf("|");
+//         break;
+//     case 1:
+//         dprintf("/");
+//         break;
+//     case 2:
+//         dprintf("-");
+//         break;
+//     case 3:
+//         dprintf("\\");
+//         break;
+//     default:
+//         break;
+//     }
+//     dprintf("\r");
+// #endif
+//     if (round != latest_round) {
+// #if defined(_EE)
+//         dprintf(".");
+// #endif
+//         latest_round = round;
+//     }
+//     bar_state = (bar_state + 1) % 40;
 
     return 0;
 }
@@ -288,14 +288,36 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userdata) {
     return total_size;
 }
 
+static
+int my_trace(CURL *handle, curl_infotype type,
+             char *data, size_t size,
+             void *clientp)
+{
+  const char *text;
+  (void)handle; /* prevent compiler warning */
+  (void)clientp;
+
+  // Write data in a file called log.txt
+    FILE *log = fopen("log.txt", "a");
+    if (log) {
+        fwrite(data, size, 1, log);
+        fclose(log);
+    }
+ 
+ dprintf("==================\n");
+ dprintf("%s\n", data);
+ dprintf("==================\n");
+  return 0;
+}
+
 int main(int argc, char **argv) {
     CURL *curl;
     CURLcode res;
-    const char *nameFile = "ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz";
+    const char *nameFile = "sitemap.xml";
     // const char *url = "http://zeus.dl.playstation.net/cdn/EP9000/UCES01421_00/GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
-    const char *url = "https://old-releases.ubuntu.com/releases/jammy/ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz"; // 700 MB
-    // const char *url = "https://releases.ubuntu.com/22.04/ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz"; // 11 MB
-    // const char *url = "http://bucanero.com.ar/sitemap.xml";
+    // const char *url = "https://old-releases.ubuntu.com/releases/jammy/ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz"; // 700 MB
+    // const char *url = "https://old-releases.ubuntu.com/releases/jammy/ubuntu-22.04.3-desktop-amd64.iso.zsync"; // 11 MB
+    const char *url = "http://bucanero.com.ar/sitemap.xml";
     
 
 #ifdef _EE
@@ -324,6 +346,9 @@ int main(int argc, char **argv) {
         }
 
         // Set verbose output
+        curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, my_trace);
+ 
+        /* the DEBUGFUNCTION has no effect until we enable VERBOSE */
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         
         // Set the URL you want to retrieve
