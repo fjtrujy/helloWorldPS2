@@ -58,6 +58,7 @@ static int WaitValidNetState(int (*checkingFunction)(void))
 	for (retry_cycles = 0; checkingFunction() == 0; retry_cycles++)
 	{ // Sleep for 1000ms.
 		usleep(1000 * 1000);
+        dprintf(".");
 
 		if (retry_cycles >= 10) // 10s = 10*1000ms
 			return -1;
@@ -183,22 +184,25 @@ static int network_init() {
     int EthernetLinkMode = NETMAN_NETIF_ETH_LINK_MODE_AUTO;
 
     // Attempt to apply the new link setting.
+    dprintf("Setting link mode...");
     if (ethApplyNetIFConfig(EthernetLinkMode) != 0)
     {
-        dprintf("Error: failed to set link mode.\n");
+        dprintf("\nError: failed to set link mode.\n");
         free(IP);
         free(NM);
         free(GW);
         return -1;
     }
+    dprintf("done!\n");
 
     // Initialize the TCP/IP protocol stack.
     ps2ipInit(IP, NM, GW);
 
     ethApplyIPConfig(1, IP, NM, GW);
     // Wait for the link to become ready.
-    dprintf("Waiting for connection...\n");
+    dprintf("Waiting for connection...");
     int ethState = ethWaitValidNetIFLinkState();
+    dprintf("done!\n");
     free(IP);
     free(NM);
     free(GW);
@@ -249,43 +253,58 @@ static void deinit_drivers() {
 int bar_state = 0;
 int latest_round = -1;
 int progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
-//     int round = bar_state / 10;
-// #if !defined(_EE)
-//     switch (round)
-//     {
-//     case 0:
-//         dprintf("|");
-//         break;
-//     case 1:
-//         dprintf("/");
-//         break;
-//     case 2:
-//         dprintf("-");
-//         break;
-//     case 3:
-//         dprintf("\\");
-//         break;
-//     default:
-//         break;
-//     }
-//     dprintf("\r");
-// #endif
-//     if (round != latest_round) {
-// #if defined(_EE)
-//         dprintf(".");
-// #endif
-//         latest_round = round;
-//     }
-//     bar_state = (bar_state + 1) % 40;
+    int round = bar_state / 100;
+#if !defined(_EE)
+    switch (round)
+    {
+    case 0:
+        dprintf("|");
+        break;
+    case 1:
+        dprintf("/");
+        break;
+    case 2:
+        dprintf("-");
+        break;
+    case 3:
+        dprintf("\\");
+        break;
+    default:
+        break;
+    }
+    dprintf("\r");
+#endif
+    if (round != latest_round) {
+#if defined(_EE)
+        dprintf(".");
+#endif
+        latest_round = round;
+    }
+    bar_state = (bar_state + 1) % 400;
 
     return 0;
 }
 
+size_t downloaded = 0;
+int y = 0;
 // Callback function to handle received data
 size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userdata) {
-    size_t total_size = size * nmemb;
-    fwrite(ptr, size, nmemb, (FILE *)userdata);
-    return total_size;
+    size_t nmemb_written, total_written;
+    nmemb_written = fwrite(ptr, size, nmemb, (FILE *)userdata);
+    total_written = nmemb_written * size;
+    downloaded += total_written;
+#if defined(_EE)
+    if (y  == 0) {
+        y = scr_getY();
+    }
+    scr_clearline(y);
+    scr_setXY(0, y);
+    scr_printf("Downloaded: %ld bytes", downloaded);
+#endif
+    if (nmemb_written != nmemb) {
+        dprintf("\nError writing file requested %ld items, written %ld items\n", nmemb, nmemb_written);
+    }
+    return total_written;
 }
 
 static
@@ -313,23 +332,31 @@ int my_trace(CURL *handle, curl_infotype type,
 int main(int argc, char **argv) {
     CURL *curl;
     CURLcode res;
-    const char *nameFile = "sitemap.xml";
-    // const char *url = "http://zeus.dl.playstation.net/cdn/EP9000/UCES01421_00/GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
+    const char *nameFile = "GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
+    const char *url = "http://zeus.dl.playstation.net/cdn/EP9000/UCES01421_00/GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
+    // const char *nameFile = "ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz";
     // const char *url = "https://old-releases.ubuntu.com/releases/jammy/ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz"; // 700 MB
+    // const char *nameFile = "ubuntu-22.04.3-desktop-amd64.iso.zsync";
     // const char *url = "https://old-releases.ubuntu.com/releases/jammy/ubuntu-22.04.3-desktop-amd64.iso.zsync"; // 11 MB
-    const char *url = "http://bucanero.com.ar/sitemap.xml";
+    // const char *nameFile = "sitemap.xml";
+    // const char *url = "http://bucanero.com.ar/sitemap.xml";
     
 
 #ifdef _EE
+    
     init_scr();
     dprintf("\n\n\nStarting Curl Example...\n");
     reset_IOP();
     init_drivers();
+    dprintf("Drivers initialized\n");
 
     if (network_init() != 0) {
+        dprintf("Failed to initialize network\n");
         deinit_drivers();
         return -1;
     }
+
+    // chdir("mass:/curl");
 #endif
 
     // Initialize libcurl
@@ -346,10 +373,10 @@ int main(int argc, char **argv) {
         }
 
         // Set verbose output
-        curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, my_trace);
+        // curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, my_trace);
  
         /* the DEBUGFUNCTION has no effect until we enable VERBOSE */
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         
         // Set the URL you want to retrieve
         curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -359,8 +386,8 @@ int main(int argc, char **argv) {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 
         // Set the progress callback function
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-        curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progress_callback);
+        // curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+        // curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progress_callback);
 
         // Set user agent string
         curl_easy_setopt(curl, CURLOPT_USERAGENT, PKGI_USER_AGENT);
@@ -395,16 +422,20 @@ int main(int argc, char **argv) {
         curl_easy_cleanup(curl);
         fclose(fp); // Close the file
 
-        // Check file size and calculate download speed
-        FILE *file = fopen(nameFile, "rb");
-        fseek(file, 0, SEEK_END);
-        long file_size = ftell(file);
-        fclose(file);
+        if(res == CURLE_OK) {
+            // Check file size and calculate download speed
+            FILE *file = fopen(nameFile, "rb");
+            fseek(file, 0, SEEK_END);
+            long file_size = ftell(file);
+            fclose(file);
 
-        double time_taken = ((double)(end - start)) / 1000000;
-        double download_speed = (file_size / 1024) / time_taken;
-        dprintf("Downloaded %ld bytes in %.2f seconds\n", file_size, time_taken);
-        dprintf("Download speed: %.2f KB/s\n", download_speed);
+            scr_clear();
+            dprintf("\n\n\n\n");
+            double time_taken = ((double)(end - start)) / 1000000;
+            double download_speed = (file_size / 1024) / time_taken;
+            dprintf("Downloaded %ld bytes in %.2f seconds\n", file_size, time_taken);
+            dprintf("Download speed: %.2f KB/s\n", download_speed);
+        }
     }
     dprintf("Curl Example Finished\n");
 
