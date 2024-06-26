@@ -21,30 +21,6 @@ jobs:
       run: |
         apk add build-base git bash cmake
     
-    - name: Recompile ps2_drivers
-      run: |
-        git clone https://github.com/fjtrujy/ps2_drivers.git
-        cd ps2_drivers
-        git checkout fix_network
-        make -j $(getconf _NPROCESSORS_ONLN) clean
-        make -j $(getconf _NPROCESSORS_ONLN)
-        make -j $(getconf _NPROCESSORS_ONLN) install
-
-    # - name: Recompile libcurl
-    #   run: |
-    #     git clone --depth 1 -b curl-7_87_0 https://github.com/curl/curl.git
-    #     cd curl
-    #     CFLAGS="-DSIZEOF_LONG=4 -DSIZEOF_LONG_LONG=8 -DNO_WRITEV" \
-    #       cmake -Wno-dev -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev.cmake -DCMAKE_INSTALL_PREFIX=$PS2SDK/ports \
-    #       -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$PS2SDK/ports \
-    #       -DBUILD_SHARED_LIBS=OFF -DENABLE_THREADED_RESOLVER=OFF -DCURL_USE_OPENSSL=OFF -DCURL_USE_WOLFSSL=ON \
-    #       -DCURL_DISABLE_SOCKETPAIR=ON -DHAVE_BASENAME=NO -DHAVE_ATOMIC=NO -DENABLE_WEBSOCKETS=ON \
-    #       -DENABLE_DEBUG=ON -DENABLE_CURLDEBUG=ON -DCURL_USE_LIBPSL=OFF -DCURL_USE_LIBSSH2=OFF \
-    #       -B build .
-    #     make -C build -j $(getconf _NPROCESSORS_ONLN) clean
-    #     make -C build -j $(getconf _NPROCESSORS_ONLN)
-    #     make -C build -j $(getconf _NPROCESSORS_ONLN) install
-    
     - name: Compile project
       run: |
         make -j $(getconf _NPROCESSORS_ONLN) clean

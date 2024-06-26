@@ -6,7 +6,6 @@
 
 #include <curl/curl.h>
 
-#ifdef _EE
 #include <kernel.h>
 #include <sifrpc.h>
 #include <iopcontrol.h>
@@ -20,14 +19,7 @@
 #define dprintf(args...) \
     scr_printf(args); \
     printf(args);
-#else
-#define dprintf(args...) \
-    printf(args);
-#endif
 
-#define PKGI_USER_AGENT "Mozilla/5.0 (PLAYSTATION 3; 1.00)"
-
-#ifdef _EE
 static int ethGetNetIFLinkStatus(void)
 {
 	return (NetManIoctl(NETMAN_NETIF_IOCTL_GET_LINK_STATUS, NULL, 0, NULL, 0) == NETMAN_NETIF_ETH_LINK_STATE_UP);
@@ -247,37 +239,13 @@ static void deinit_drivers() {
     deinit_ps2_filesystem_driver();
 }
 
-#endif
-
 // Callback function to track progress
 int bar_state = 0;
 int latest_round = -1;
 int progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
     int round = bar_state / 100;
-#if !defined(_EE)
-    switch (round)
-    {
-    case 0:
-        dprintf("|");
-        break;
-    case 1:
-        dprintf("/");
-        break;
-    case 2:
-        dprintf("-");
-        break;
-    case 3:
-        dprintf("\\");
-        break;
-    default:
-        break;
-    }
-    dprintf("\r");
-#endif
     if (round != latest_round) {
-#if defined(_EE)
         dprintf(".");
-#endif
         latest_round = round;
     }
     bar_state = (bar_state + 1) % 400;
@@ -293,58 +261,23 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userdata) {
     nmemb_written = fwrite(ptr, size, nmemb, (FILE *)userdata);
     total_written = nmemb_written * size;
     downloaded += total_written;
-#if defined(_EE)
     if (y  == 0) {
         y = scr_getY();
     }
     scr_clearline(y);
     scr_setXY(0, y);
     scr_printf("Downloaded: %ld bytes", downloaded);
-#endif
     if (nmemb_written != nmemb) {
         dprintf("\nError writing file requested %ld items, written %ld items\n", nmemb, nmemb_written);
     }
     return total_written;
 }
 
-static
-int my_trace(CURL *handle, curl_infotype type,
-             char *data, size_t size,
-             void *clientp)
-{
-  const char *text;
-  (void)handle; /* prevent compiler warning */
-  (void)clientp;
-
-  // Write data in a file called log.txt
-    FILE *log = fopen("log.txt", "a");
-    if (log) {
-        fwrite(data, size, 1, log);
-        fclose(log);
-    }
- 
- dprintf("==================\n");
- dprintf("%s\n", data);
- dprintf("==================\n");
-  return 0;
-}
-
 int main(int argc, char **argv) {
     CURL *curl;
     CURLcode res;
-    // const char *nameFile = "GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
-    // const char *url = "http://zeus.dl.playstation.net/cdn/EP9000/UCES01421_00/GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
-    // const char *nameFile = "ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz";
-    // const char *url = "https://old-releases.ubuntu.com/releases/jammy/ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz"; // 700 MB
-    // const char *nameFile = "ubuntu-22.04.3-desktop-amd64.iso.zsync";
-    // const char *url = "https://old-releases.ubuntu.com/releases/jammy/ubuntu-22.04.3-desktop-amd64.iso.zsync"; // 11 MB
-    // const char *nameFile = "sitemap.xml";
-    // const char *url = "http://bucanero.com.ar/sitemap.xml";
     const char *nameFile = "github.html";
     const char *url = "https://github.com";
-    
-
-#ifdef _EE
     
     init_scr();
     dprintf("\n\n\nStarting Curl Example...\n");
@@ -359,7 +292,6 @@ int main(int argc, char **argv) {
     }
 
     // chdir("mass:/curl");
-#endif
 
     // Initialize libcurl
     curl = curl_easy_init();
@@ -367,48 +299,25 @@ int main(int argc, char **argv) {
         FILE *fp = fopen(nameFile, "wb"); // Open file for writing
         if (fp == NULL) {
             dprintf("Failed to open file for writing\n");
-#if defined(_EE)
             deinit_drivers();
             SleepThread();
-#endif
             return 1;
         }
 
-        // Set verbose output
-        // curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, my_trace);
- 
-        /* the DEBUGFUNCTION has no effect until we enable VERBOSE */
-        // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-        
-        // Set the URL you want to retrieve
         curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_TRY);
+        curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1L);
 
         // Set the write callback function
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-
-        // Set the progress callback function
-        // curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-        // curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progress_callback);
-
-        // Set user agent string
-        curl_easy_setopt(curl, CURLOPT_USERAGENT, PKGI_USER_AGENT);
-        // don't verify the certificate's name against host
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        // don't verify the peer's SSL certificate
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        // Set SSL VERSION to TLS 1.2
-        curl_easy_setopt(curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
-        // Set timeout for the connection to build
-        curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
-        // Follow redirects
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        // maximum number of redirects allowed
-        curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 20L);
-        // Fail the request if the HTTP code returned is equal to or larger than 400
-        curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
-        // request using SSL for the FTP transfer if available
-        curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_TRY);
 
         // Perform the request
         dprintf("Downloading file...\n");
@@ -421,7 +330,6 @@ int main(int argc, char **argv) {
 
         // Cleanup
 
-        curl_easy_cleanup(curl);
         fclose(fp); // Close the file
 
         if(res == CURLE_OK) {
@@ -440,12 +348,10 @@ int main(int argc, char **argv) {
         }
     }
     dprintf("Curl Example Finished\n");
+    curl_easy_cleanup(curl);
 
-#ifdef _EE
     deinit_drivers();
-
     SleepThread();
-#endif
 
     return 0;
 }
