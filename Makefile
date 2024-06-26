@@ -14,6 +14,8 @@ EE_LIBS += -lcurl -lwolfssl -lz -lps2_drivers -ldebug -lpatches
 EE_INCS = -I$(PS2SDK)/ports/include
 EE_LDFLAGS += -L$(PS2SDK)/ports/lib -L.
 
+EE_CFLAGS += -Wno-implicit-function-declaration -Wno-strict-aliasing -Wno-unused-function
+
 ifeq ($(DEBUG), 1)
   EE_CFLAGS += -DDEBUG -O0 -g
 else 
