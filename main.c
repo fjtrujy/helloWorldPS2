@@ -332,14 +332,16 @@ int my_trace(CURL *handle, curl_infotype type,
 int main(int argc, char **argv) {
     CURL *curl;
     CURLcode res;
-    const char *nameFile = "GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
-    const char *url = "http://zeus.dl.playstation.net/cdn/EP9000/UCES01421_00/GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
+    // const char *nameFile = "GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
+    // const char *url = "http://zeus.dl.playstation.net/cdn/EP9000/UCES01421_00/GRIDnjgCNVNWExNcSeHMBxJUBsDmwjXBHNqqwHQnnLhwCVQeRBjCoViIhGvLQSQA.pkg";
     // const char *nameFile = "ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz";
     // const char *url = "https://old-releases.ubuntu.com/releases/jammy/ubuntu-22.04-beta-preinstalled-server-riscv64+unmatched.img.xz"; // 700 MB
     // const char *nameFile = "ubuntu-22.04.3-desktop-amd64.iso.zsync";
     // const char *url = "https://old-releases.ubuntu.com/releases/jammy/ubuntu-22.04.3-desktop-amd64.iso.zsync"; // 11 MB
     // const char *nameFile = "sitemap.xml";
     // const char *url = "http://bucanero.com.ar/sitemap.xml";
+    const char *nameFile = "github.html";
+    const char *url = "https://github.com";
     
 
 #ifdef _EE
