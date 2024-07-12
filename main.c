@@ -1,27 +1,43 @@
+#include <stdio.h>
+
 #include <kernel.h>
+#include <ps2prof.h>
 
-int printf(const char *format, ...);
-
-int main()
-{
-   while (1)
-   {
-      printf("Hello, world!\n");
+int calculateNPrime(int n) {
+   int i, j, count = 0;
+   for (i = 2; i <= n; i++) {
+      for (j = 2; j <= i; j++) {
+         if (i % j == 0) {
+            break;
+         }
+      }
+      if (i == j) {
+         count++;
+      }
    }
-   
+   return count;
+
+}
+
+int dummy_function()
+{
+   int i;
+   for (i = 0; i < 10000; i++)
+   {
+      printf(".");
+   }
+   printf("\n");
    return 0;
 }
 
-#if defined(DUMMY_TIMEZONE)
-   void _libcglue_timezone_update() {}
-#endif
+int main()
+{
+   printf("Hello, world!\n");
+   dummy_function();  
+   calculateNPrime(1000);
+   printf("Goodbye, world!\n");
 
-#if defined(DUMMY_LIBC_INIT)
-   void _libcglue_init() {}
-   void _libcglue_deinit() {}
-   void _libcglue_args_parse() {}
-#endif
-
-#if defined(KERNEL_NOPATCH)
-    DISABLE_PATCHED_FUNCTIONS();
-#endif
+   gprof_cleanup();
+   SleepThread();
+   return 0;
+}

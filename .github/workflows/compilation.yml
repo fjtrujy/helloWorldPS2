@@ -13,32 +13,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        docker_tag: [v1.0, v1.1, v1.2.0, latest]
-        flags: [
-          DUMMY_LIBC_INIT=1, 
-          DUMMY_TIMEZONE=1, 
-          KERNEL_NOPATCH=1, 
-          NEWLIB_NANO=1, 
-          KERNEL_NOPATCH=1 NEWLIB_NANO=1,
-          KERNEL_NOPATCH=1 NEWLIB_NANO=1 DUMMY_LIBC_INIT=1,
-          KERNEL_NOPATCH=1 NEWLIB_NANO=1 DUMMY_TIMEZONE=1,  
-          DEFAULT=1
-          ]
-
-    container: ps2dev/ps2dev:${{ matrix.docker_tag }}
+    container: ps2dev/ps2dev:latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install dependencies
       run: |
-        apk add build-base
+        apk add build-base git bash cmake
     
     - name: Compile project
       run: |
         make -j $(getconf _NPROCESSORS_ONLN) clean
-        make -j $(getconf _NPROCESSORS_ONLN) all ${{ matrix.flags }}
+        make -j $(getconf _NPROCESSORS_ONLN) all
 
     - name: Get short SHA
       id: slug
@@ -46,7 +32,7 @@ jobs:
 
     - name: Upload artifacts
       if: ${{ success() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: hello-${{ steps.slug.outputs.sha8 }}-${{matrix.docker_tag}}-${{ matrix.flags }}
-        path: hello.elf
+        name: gprof-${{ steps.slug.outputs.sha8 }}
+        path: gprof.elf
