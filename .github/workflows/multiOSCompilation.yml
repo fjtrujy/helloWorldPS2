@@ -47,7 +47,7 @@ jobs:
         with:
           msystem: MINGW32
           install: |
-            git make gcc
+            git mingw-w64-i686-make mingw-w64-i686-gcc
           update: true
 
       - name: Compile project
