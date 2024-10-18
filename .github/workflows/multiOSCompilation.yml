@@ -49,21 +49,12 @@ jobs:
           install: |
             base-devel git mingw-w64-i686-gcc tar mingw-w64-i686-cmake mingw-w64-i686-make
           update: true
-    
-      - name: Download precompiled ps2dev toolchain from ps2dev/ps2dev
-        run: |
-          curl -sL https://github.com/ps2dev/ps2dev/releases/download/latest/ps2dev-${{ matrix.os[0] }}.tar.gz | tar xvz -C ./
 
       - name: Compile project
         run: |
-          export PS2DEV=$PWD/ps2dev
-          export PS2SDK=$PS2DEV/ps2sdk
-          export GSKIT=$PS2DEV/gsKit
-          export PATH=$PATH:$PS2DEV/bin:$PS2DEV/ee/bin:$PS2DEV/iop/bin:$PS2DEV/dvp/bin:$PS2SDK/bin
-          
-          ${PS2SDK}/bin/bin2c ${PS2SDK}/iop/irx/mcman.irx mcman_irx.c mcman_irx
+          gcc -o bin2c bin2c.c
+          ./bin2c mcman.irx mcman_irx.c mcman_irx
           md5sum mcman_irx.c
-      
       - name: Get short SHA
         id: slug
         run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
