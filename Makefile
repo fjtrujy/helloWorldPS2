@@ -11,7 +11,9 @@ EE_BIN = hello.elf
 
 EE_OBJS = main.o
 EE_CFLAGS += -O3 -g
-
+EE_LIBS = -lps2_drivers -lpatches
+EE_LDFLAGS += -L$(PS2SDK)/ports/lib
+EE_INCS += -I$(PS2SDK)/ports/include
 
 all: $(EE_BIN)
 
