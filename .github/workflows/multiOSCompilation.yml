@@ -45,7 +45,7 @@ jobs:
         if: matrix.os[0] == 'windows-latest'  
         uses: msys2/setup-msys2@v2
         with:
-          msystem: MSYS2
+          msystem: MSYS
           install: |
             git make gcc
           update: true
