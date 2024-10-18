@@ -8,9 +8,9 @@
 # Review ps2sdk README & LICENSE files for further details.
 */
 
-//#ifndef __MINGW32__
+#ifndef __MINGW32__
 #define USE_MMAP
-//#endif
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>

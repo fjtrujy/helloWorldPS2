@@ -43,12 +43,14 @@ jobs:
 
       - name: Install MSYS2 packages
         if: matrix.os[0] == 'windows-latest'  
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW32
-          install: |
-            base-devel git mingw-w64-i686-gcc tar mingw-w64-i686-cmake mingw-w64-i686-make
-          update: true
+        #uses: msys2/setup-msys2@v2
+        #with:
+         # msystem: MINGW32
+          #install: |
+           # git make gcc
+          #update: true
+        run: |
+          pacman -S --noconfirm git make gcc
 
       - name: Compile project
         run: |
