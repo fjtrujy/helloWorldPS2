@@ -1,4 +1,4 @@
-name: CI
+name: CI-windows
 
 on:
   push:
@@ -25,9 +25,7 @@ jobs:
       with:
         msystem: MINGW32
         install: |
-          base-devel git make texinfo flex bison patch binutils mingw-w64-i686-gcc mpc-devel tar
-          autotools gettext gettext-devel
-          mingw-w64-i686-cmake mingw-w64-i686-make mingw-w64-i686-libogg
+          base-devel git mingw-w64-i686-gcc tar mingw-w64-i686-cmake mingw-w64-i686-make
         update: true
     
     - name: Download precompiled ps2dev toolchain from ps2dev/ps2dev
