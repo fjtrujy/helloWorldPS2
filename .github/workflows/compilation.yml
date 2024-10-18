@@ -1,4 +1,4 @@
-name: CI-windows
+name: CI-MultiOS
 
 on:
   push:
@@ -12,43 +12,65 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os[0] }}
+    strategy:
+      matrix:
+        os: [
+          [macos-latest, arm64, bash],
+          [macos-13, x86_64, bash],
+          [ubuntu-latest, x86_64, bash],
+          [windows-latest, x86_64, msys2]
+        ]
+      fail-fast: false
     defaults:
      run:
-      shell: msys2 {0}
+      shell: ${{ matrix.os[2] }} {0}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install MSYS2 packages
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW32
-        install: |
-          base-devel git mingw-w64-i686-gcc tar mingw-w64-i686-cmake mingw-w64-i686-make
-        update: true
+      - name: Install Ubuntu packages
+        if: matrix.os[0] == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install curl make bash
+
+      - name: Install macOS packages
+        if: startsWith(matrix.os[0], 'macos')
+        run: |
+          brew update
+          brew install curl make bash
+
+      - name: Install MSYS2 packages
+        if: matrix.os[0] == 'windows-latest'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW32
+          install: |
+            base-devel git mingw-w64-i686-gcc tar mingw-w64-i686-cmake mingw-w64-i686-make
+          update: true
     
-    - name: Download precompiled ps2dev toolchain from ps2dev/ps2dev
-      run: |
-        curl -sL https://github.com/ps2dev/ps2dev/releases/download/latest/ps2dev-windows-latest.tar.gz | tar xvz -C ./
+      - name: Download precompiled ps2dev toolchain from ps2dev/ps2dev
+        run: |
+          curl -sL https://github.com/ps2dev/ps2dev/releases/download/latest/ps2dev-${{ matrix.os[0] }}.tar.gz | tar xvz -C ./
 
-    - name: Compile project
-      run: |
-        export PS2DEV=$PWD/ps2dev
-        export PS2SDK=$PS2DEV/ps2sdk
-        export GSKIT=$PS2DEV/gsKit
-        export PATH=$PATH:$PS2DEV/bin:$PS2DEV/ee/bin:$PS2DEV/iop/bin:$PS2DEV/dvp/bin:$PS2SDK/bin
-        
-        make -j $(getconf _NPROCESSORS_ONLN) clean
-        make -j $(getconf _NPROCESSORS_ONLN) all
+      - name: Compile project
+        run: |
+          export PS2DEV=$PWD/ps2dev
+          export PS2SDK=$PS2DEV/ps2sdk
+          export GSKIT=$PS2DEV/gsKit
+          export PATH=$PATH:$PS2DEV/bin:$PS2DEV/ee/bin:$PS2DEV/iop/bin:$PS2DEV/dvp/bin:$PS2SDK/bin
+          
+          make -j $(getconf _NPROCESSORS_ONLN) clean
+          make -j $(getconf _NPROCESSORS_ONLN) all
 
-    - name: Get short SHA
-      id: slug
-      run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
+      - name: Get short SHA
+        id: slug
+        run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
 
-    - name: Upload artifacts
-      if: ${{ success() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: hello-${{ steps.slug.outputs.sha8 }}
-        path: hello.elf
+      - name: Upload artifacts
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: hello-${{ steps.slug.outputs.sha8 }}-${{matrix.os[0]}}-${{matrix.os[1]}}
+          path: hello.elf
