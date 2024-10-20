@@ -47,14 +47,13 @@ jobs:
         with:
           msystem: MINGW32
           install: |
-            git mingw-w64-i686-make mingw-w64-i686-gcc
+            base-devel git mingw-w64-i686-gcc tar mingw-w64-i686-cmake mingw-w64-i686-make
           update: true
 
       - name: Compile project
         run: |
           gcc -o bin2c bin2c.c
           ./bin2c mcman.irx mcman_irx.c mcman_irx
-          md5sum mcman_irx.c
       - name: Get short SHA
         id: slug
         run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
