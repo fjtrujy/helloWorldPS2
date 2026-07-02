@@ -14,6 +14,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+        ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true   # runner uses node20, whose musl needs are met
     strategy:
       matrix:
         docker_tag: [v1.0, v1.1, v1.2.0, latest]
@@ -30,7 +32,7 @@ jobs:
 
     container: ps2dev/ps2dev:${{ matrix.docker_tag }}
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v4
 
     - name: Install dependencies
       run: |
@@ -47,7 +49,7 @@ jobs:
 
     - name: Upload artifacts
       if: ${{ success() }}
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v4
       with:
         name: hello-${{ steps.slug.outputs.sha8 }}-${{matrix.docker_tag}}-${{ matrix.flags }}
         path: hello.elf
